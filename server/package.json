@@ -1,15 +1,14 @@
 {
-  "name": "Udeshya Sharma",
+  "name": "Project Planner",
   "version": "1.0.0",
   "description": "Backend API for Project Planner",
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
-    "lint": "eslint src --ext .js"
+    "start": "node src/server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Udeshya Sharma",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -22,11 +21,6 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "eslint": "^9.13.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-n": "^17.12.0",
-    "eslint-plugin-promise": "^7.1.0",
     "nodemon": "^3.1.7"
   }
 }
