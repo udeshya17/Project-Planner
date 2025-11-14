@@ -1,17 +1,27 @@
 const ApiError = require('../utils/ApiError')
+const config = require('../config')
 
 function notFoundHandler (req, res, next) {
   next(new ApiError(404, 'Not found'))
 }
 
-// eslint-disable-next-line no-unused-vars
+// handling the errors for the api
 function errorHandler (err, req, res, next) {
-  const status = err.statusCode || err.status || 500
-  const message = err.message || 'Internal server error'
+  let status = err.statusCode || err.status || 500
+  let message = err.message || 'Internal server error'
 
-  // Simple logging for now
-  // In a real app, connect this to a logger service
-  console.error(err)
+  // some common database errors
+  if (err.name === 'CastError') {
+    status = 400
+    message = 'Invalid ID format'
+  }
+
+  // logging the errors
+  if (config.nodeEnv === 'production') {
+    console.error(`[Error] ${status} - ${message}`)
+  } else {
+    console.error(err)
+  }
 
   res.status(status).json({ message })
 }
