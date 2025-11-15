@@ -7,6 +7,11 @@ async function create (req, res, next) {
       userId: req.user._id,
       data: req.body
     })
+
+    const io = req.app.get('io')
+    if (io) {
+      io.to(`project:${req.params.projectId}`).emit('task:created', task)
+    }
     res.status(201).json(task)
   } catch (err) {
     next(err)
@@ -20,6 +25,11 @@ async function update (req, res, next) {
       userId: req.user._id,
       data: req.body
     })
+
+    const io = req.app.get('io')
+    if (io) {
+      io.to(`project:${task.project.toString()}`).emit('task:updated', task)
+    }
     res.json(task)
   } catch (err) {
     next(err)
@@ -32,6 +42,11 @@ async function remove (req, res, next) {
       taskId: req.params.id,
       userId: req.user._id
     })
+
+    const io = req.app.get('io')
+    if (io) {
+      io.emit('task:deleted', { taskId: req.params.id })
+    }
     res.status(204).end()
   } catch (err) {
     next(err)

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { fetchProjects } from "../api/project.api";
 import { useUI } from "./UIContext";
 import { useAuthContext } from "./AuthContext";
+import { getSocketClient } from "../utils/socket";
 
 const ProjectContext = createContext(null);
 
@@ -40,6 +41,28 @@ export function ProjectProvider({ children }) {
 
     if (!isBootstrapping && user) {
       load();
+
+      const socket = getSocketClient();
+      if (socket) {
+        socket.off("project:created");
+        socket.off("project:added");
+        socket.off("project:deleted");
+
+        socket.on("project:created", (project) => {
+          setProjects((prev) => [project, ...prev]);
+        });
+
+        socket.on("project:added", (project) => {
+          setProjects((prev) => {
+            const exists = prev.some((p) => p._id === project._id);
+            return exists ? prev : [project, ...prev];
+          });
+        });
+
+        socket.on("project:deleted", ({ projectId }) => {
+          setProjects((prev) => prev.filter((p) => p._id !== projectId));
+        });
+      }
     } else if (!user) {
       setProjects([]);
     }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createTask, deleteTask, updateTask } from "../api/task.api";
 import { fetchProjectDetails } from "../api/project.api";
 import { useUI } from "../context/UIContext";
+import { getSocketClient } from "../utils/socket";
 
 const STATUSES = ["todo", "in_progress", "completed"];
 
@@ -29,9 +30,50 @@ export function useTasks(projectId) {
   }, [projectId, addToast]);
 
   useEffect(() => {
-    if (projectId) {
-      load();
-    }
+    if (!projectId) return;
+
+    load();
+
+    const socket = getSocketClient();
+    if (!socket) return;
+
+    socket.emit("project:join", projectId);
+
+    const handleCreated = (task) => {
+      if (
+        task.project?.toString?.() === projectId ||
+        task.project === projectId
+      ) {
+        setTasks((prev) => {
+          const exists = prev.some((t) => t._id === task._id);
+          return exists ? prev : [task, ...prev];
+        });
+      }
+    };
+
+    const handleUpdated = (task) => {
+      if (
+        task.project?.toString?.() === projectId ||
+        task.project === projectId
+      ) {
+        setTasks((prev) => prev.map((t) => (t._id === task._id ? task : t)));
+      }
+    };
+
+    const handleDeleted = ({ taskId }) => {
+      setTasks((prev) => prev.filter((t) => t._id !== taskId));
+    };
+
+    socket.on("task:created", handleCreated);
+    socket.on("task:updated", handleUpdated);
+    socket.on("task:deleted", handleDeleted);
+
+    return () => {
+      socket.emit("project:leave", projectId);
+      socket.off("task:created", handleCreated);
+      socket.off("task:updated", handleUpdated);
+      socket.off("task:deleted", handleDeleted);
+    };
   }, [projectId, load]);
 
   const handleCreate = useCallback(

@@ -84,7 +84,7 @@ async function addMemberByEmail ({ projectId, ownerId, email }) {
     await project.save()
   }
 
-  return project
+  return { project, addedUserId: user._id }
 }
 
 async function ensureProjectMember (userId, projectId) {

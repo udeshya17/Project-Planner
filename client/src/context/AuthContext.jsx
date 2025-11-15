@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { loginRequest, signupRequest } from "../api/auth.api";
 import { useUI } from "./UIContext";
+import { disconnectSocket, getSocketClient } from "../utils/socket";
 
 const AuthContext = createContext(null);
 
@@ -20,7 +21,10 @@ export function AuthProvider({ children }) {
     const rawUser = window.localStorage.getItem("pp_user");
     if (token && rawUser) {
       try {
-        setUser(JSON.parse(rawUser));
+        const parsed = JSON.parse(rawUser);
+        setUser(parsed);
+        // here we are geeting the socket 
+        getSocketClient();
       } catch {
         window.localStorage.removeItem("pp_token");
         window.localStorage.removeItem("pp_user");
@@ -34,6 +38,9 @@ export function AuthProvider({ children }) {
     window.localStorage.setItem("pp_token", token);
     window.localStorage.setItem("pp_user", JSON.stringify(nextUser));
     setUser(nextUser);
+    // if there is new token than connect socket
+    disconnectSocket();
+    getSocketClient();
   }, []);
 
   const login = useCallback(
@@ -66,6 +73,7 @@ export function AuthProvider({ children }) {
     window.localStorage.removeItem("pp_token");
     window.localStorage.removeItem("pp_user");
     setUser(null);
+    disconnectSocket();
   }, []);
 
   const value = {
