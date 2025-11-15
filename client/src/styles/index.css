@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply antialiased bg-slate-950 text-slate-100;
+  }
+
+  html.light body {
+    @apply bg-slate-50 text-slate-900;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen bg-slate-950 text-slate-100;
+  }
+
+  html.light .app-shell {
+    @apply bg-slate-50 text-slate-900;
+  }
+
+  .glass-panel {
+    @apply rounded-xl border border-slate-800 bg-slate-900/70 backdrop-blur;
+  }
+
+  html.light .glass-panel {
+    @apply border-slate-200 bg-white/80;
+  }
+
+  .toast-progress {
+    transform-origin: left;
+    animation: toast-progress 4s linear forwards;
+  }
+}
+
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
