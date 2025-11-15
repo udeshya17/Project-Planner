@@ -49,7 +49,10 @@ export function ProjectProvider({ children }) {
         socket.off("project:deleted");
 
         socket.on("project:created", (project) => {
-          setProjects((prev) => [project, ...prev]);
+          setProjects((prev) => {
+            const exists = prev.some((p) => p._id === project._id);
+            return exists ? prev : [project, ...prev];
+          });
         });
 
         socket.on("project:added", (project) => {

@@ -5,6 +5,7 @@ import ProjectCard from "../../components/cards/ProjectCard";
 import CreateProjectModal from "../project/CreateProjectModal";
 import { createProject } from "../../api/project.api";
 import { useUI } from "../../context/UIContext";
+import { getSocketClient } from "../../utils/socket";
 
 function Dashboard() {
   const { projects, setProjects, isLoading } = useProjects();
@@ -12,8 +13,17 @@ function Dashboard() {
   const [showCreate, setShowCreate] = useState(false);
 
   const handleCreateProject = async (payload) => {
+    const socket = getSocketClient();
+    const shouldUpdateLocally = !socket || !socket.connected;
+
     const created = await createProject(payload);
-    setProjects((prev) => [created, ...prev]);
+
+    if (shouldUpdateLocally) {
+      setProjects((prev) => {
+        const exists = prev.some((p) => p._id === created._id);
+        return exists ? prev : [created, ...prev];
+      });
+    }
     addToast({
       type: "success",
       title: "Project created",
