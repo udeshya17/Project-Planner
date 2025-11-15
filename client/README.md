@@ -22,9 +22,6 @@ npm run dev
 
 By default the app expects the API at `http://localhost:4000/api`. You can override this via:
 
-```bash
-VITE_API_BASE_URL="https://your-backend-url.com/api"
-```
 
 Create a `.env` file in `client` if you want to set this for local development.
 
