@@ -78,29 +78,53 @@ export function useTasks(projectId) {
 
   const handleCreate = useCallback(
     async (payload) => {
-      const optimistic = {
-        ...payload,
-        _id: `tmp-${Date.now()}`,
-        status: payload.status || "todo",
-      };
-      setTasks((prev) => [optimistic, ...prev]);
-      try {
-        const created = await createTask(projectId, payload);
-        setTasks((prev) =>
-          prev.map((t) => (t._id === optimistic._id ? created : t))
-        );
-        addToast({
-          type: "success",
-          title: "Task created",
-          message: payload.title,
-        });
-      } catch (err) {
-        setTasks((prev) => prev.filter((t) => t._id !== optimistic._id));
-        addToast({
-          type: "error",
-          title: "Could not create task",
-          message: err?.response?.data?.message || err.message,
-        });
+      const socket = getSocketClient();
+      const useOptimistic = !socket || !socket.connected;
+
+      if (useOptimistic) {
+        const optimistic = {
+          ...payload,
+          _id: `tmp-${Date.now()}`,
+          status: payload.status || "todo",
+        };
+        setTasks((prev) => [optimistic, ...prev]);
+        try {
+          const created = await createTask(projectId, payload);
+          setTasks((prev) =>
+            prev.map((t) => (t._id === optimistic._id ? created : t))
+          );
+          addToast({
+            type: "success",
+            title: "Task created",
+            message: payload.title,
+          });
+        } catch (err) {
+          setTasks((prev) => prev.filter((t) => t._id !== optimistic._id));
+          addToast({
+            type: "error",
+            title: "Could not create task",
+            message: err?.response?.data?.message || err.message,
+          });
+        }
+      } else {
+        try {
+          const created = await createTask(projectId, payload);
+          setTasks((prev) => {
+            const exists = prev.some((t) => t._id === created._id);
+            return exists ? prev : [created, ...prev];
+          });
+          addToast({
+            type: "success",
+            title: "Task created",
+            message: payload.title,
+          });
+        } catch (err) {
+          addToast({
+            type: "error",
+            title: "Could not create task",
+            message: err?.response?.data?.message || err.message,
+          });
+        }
       }
     },
     [projectId, addToast]
